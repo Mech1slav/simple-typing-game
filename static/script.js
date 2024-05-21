@@ -5,16 +5,52 @@ document.addEventListener("DOMContentLoaded", function() {
     let typedWord = '';
     let timerInterval;
     let timerValue;
+    let totalCorrectWordsCount = 0;
+    let roundCorrectWordsCount = 0;
+
+    const startScreen = document.getElementById("start-screen");
+    const gameScreen = document.getElementById("game");
+    const resultScreen = document.getElementById("result-screen");
+
+    const startButton = document.getElementById("start-button");
+    const restartButton = document.getElementById("restart-button");
+    const resultMessage = document.getElementById("result-message");
+
+    function showStartScreen() {
+        startScreen.style.display = "block";
+        gameScreen.style.display = "none";
+        resultScreen.style.display = "none";
+    }
+
+    function showGameScreen() {
+        startScreen.style.display = "none";
+        gameScreen.style.display = "block";
+        resultScreen.style.display = "none";
+        fetchWords();
+    }
+
+    function showResultScreen(message) {
+        startScreen.style.display = "none";
+        gameScreen.style.display = "none";
+        resultScreen.style.display = "block";
+        resultMessage.textContent = `${message} Количество правильно введенных слов: ${totalCorrectWordsCount}`;
+    }
 
     function fetchWords() {
         fetch('/words')
             .then(response => response.text())
             .then(text => {
                 words = text.split(' ');
+                while (words.length < 5) {
+                    words = words.concat(words);
+                }
+                words = words.slice(0, 5); // Убедимся, что всегда 5 слов
                 currentWordIndex = 0;
                 currentWord = words[currentWordIndex];
                 typedWord = '';
+                roundCorrectWordsCount = 0;
                 updateDisplay();
+                startTimer();
             });
     }
 
@@ -27,8 +63,8 @@ document.addEventListener("DOMContentLoaded", function() {
             timerValue -= 0.1;
             if (timerValue <= 0) {
                 clearInterval(timerInterval);
-                alert('Time is up!');
-                fetchWords();
+                totalCorrectWordsCount += roundCorrectWordsCount;
+                showResultScreen("Время вышло!");
             } else {
                 timerElement.textContent = timerValue.toFixed(1);
             }
@@ -56,7 +92,6 @@ document.addEventListener("DOMContentLoaded", function() {
             inputContainer.appendChild(input);
         }
         document.querySelector('.char-input').focus();
-        startTimer(); // Запускаем таймер при обновлении дисплея
     }
 
     document.getElementById("input-container").addEventListener("input", function(e) {
@@ -70,20 +105,21 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (index < currentWord.length - 1) {
                     document.querySelector(`.char-input[data-index="${index + 1}"]`).focus();
                 } else if (typedWord === currentWord) {
-                    setTimeout(() => {
-                        clearInterval(timerInterval);  // Очищаем таймер
-                        words.splice(currentWordIndex, 1);
-                        if (words.length === 0) {
-                            fetchWords();
-                        } else {
-                            if (currentWordIndex >= words.length) {
-                                currentWordIndex = 0;
-                            }
-                            currentWord = words[currentWordIndex];
-                            typedWord = '';
-                            updateDisplay();
+                    clearInterval(timerInterval);
+                    roundCorrectWordsCount++;
+                    words.splice(currentWordIndex, 1);
+                    if (words.length === 0) {
+                        totalCorrectWordsCount += roundCorrectWordsCount;
+                        fetchWords();
+                    } else {
+                        if (currentWordIndex >= words.length) {
+                            currentWordIndex = 0;
                         }
-                    }, 500);
+                        currentWord = words[currentWordIndex];
+                        typedWord = '';
+                        updateDisplay();
+                        startTimer();
+                    }
                 }
             } else {
                 target.style.color = 'red';
@@ -92,5 +128,8 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    fetchWords();
+    startButton.addEventListener("click", showGameScreen);
+    restartButton.addEventListener("click", showStartScreen);
+
+    showStartScreen();
 });

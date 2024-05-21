@@ -6,10 +6,22 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="game">
+<div id="start-screen">
+    <h1>Набираем текст</h1>
+    <button id="start-button">Начать</button>
+</div>
+
+<div id="game" style="display: none;">
     <div id="words"></div>
     <div id="input-container"></div>
 </div>
+
+<div id="result-screen" style="display: none;">
+    <h1>Игра окончена</h1>
+    <p id="result-message"></p>
+    <button id="restart-button">Начать заново</button>
+</div>
+
 <script src="script.js"></script>
 </body>
 </html>
