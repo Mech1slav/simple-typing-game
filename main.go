@@ -16,7 +16,7 @@ var wordList = []string{
 
 func getRandomWords() []string {
 	rand.Seed(time.Now().UnixNano())
-	n := rand.Intn(3) + 3 // Случайное число от 3 до 5
+	n := 5 // Фиксированное количество слов
 	words := make([]string, n)
 	for i := 0; i < n; i++ {
 		words[i] = wordList[rand.Intn(len(wordList))]

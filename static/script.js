@@ -3,6 +3,8 @@ document.addEventListener("DOMContentLoaded", function() {
     let currentWordIndex = 0;
     let currentWord = '';
     let typedWord = '';
+    let timerInterval;
+    let timerValue;
 
     function fetchWords() {
         fetch('/words')
@@ -16,11 +18,28 @@ document.addEventListener("DOMContentLoaded", function() {
             });
     }
 
+    function startTimer() {
+        const timerElement = document.querySelector('.timer');
+        timerValue = currentWord.length * 0.5;
+        timerElement.textContent = timerValue.toFixed(1);
+
+        timerInterval = setInterval(() => {
+            timerValue -= 0.1;
+            if (timerValue <= 0) {
+                clearInterval(timerInterval);
+                alert('Time is up!');
+                fetchWords();
+            } else {
+                timerElement.textContent = timerValue.toFixed(1);
+            }
+        }, 100);
+    }
+
     function updateDisplay() {
         const wordsContainer = document.getElementById("words");
         wordsContainer.innerHTML = words.map((word, index) => {
             if (index === currentWordIndex) {
-                return `<span class="word current-word">${currentWord}</span>`;
+                return `<span class="word current-word">${currentWord}<span class="timer"></span></span>`;
             }
             return `<span class="word">${word}</span>`;
         }).join(' ');
@@ -37,6 +56,7 @@ document.addEventListener("DOMContentLoaded", function() {
             inputContainer.appendChild(input);
         }
         document.querySelector('.char-input').focus();
+        startTimer(); // Запускаем таймер при обновлении дисплея
     }
 
     document.getElementById("input-container").addEventListener("input", function(e) {
@@ -51,6 +71,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     document.querySelector(`.char-input[data-index="${index + 1}"]`).focus();
                 } else if (typedWord === currentWord) {
                     setTimeout(() => {
+                        clearInterval(timerInterval);  // Очищаем таймер
                         words.splice(currentWordIndex, 1);
                         if (words.length === 0) {
                             fetchWords();
@@ -62,7 +83,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             typedWord = '';
                             updateDisplay();
                         }
-                    }, 50);
+                    }, 500);
                 }
             } else {
                 target.style.color = 'red';
